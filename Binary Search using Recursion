@@ -1,0 +1,45 @@
+#include<stdio.h>
+ int binarySearch(int arr[],int low,int high,int target)
+    {
+        int mid, n, i;
+    if(low>high)
+        return -1;
+    mid = low+(high-low)/2;
+    if(arr[mid]==target){
+        return mid;
+    }else if(arr[mid]>target){
+        return binarySearch(arr, low,mid-1,target);
+    }else{
+        return binarySearch(arr, mid+1, high, target);
+    }
+    
+    printf("After sorting the elements in the array are:\n");
+    for(i=0;i<n;i++){
+        printf("a[%d] = %d\n", i, arr[n]);
+    }
+    }
+
+int main(){
+    int a[10], n, i, j, temp, pos, key;
+    printf("Enter the value of n: ");
+    scanf("%d",&n);
+    
+    printf("Enter %d elements: ",n);
+    for(i=0;i<n;i++){
+        scanf("%d",&a[n]);
+    }
+    for(i=0; i<n-1;i++){
+        for(j=0;j<n-i-1;j++){
+            temp = a[j];
+            a[j] = a[j+1];
+            a[j+1] = temp;
+        }
+    }
+    printf("Enter the value to be searched:");
+    scanf("%d",&key);
+    pos = binarySearch(a,0,n-1,key);
+    printf("Pos of element: %d",pos);
+    return 0;
+}
+    
+   
