@@ -1,65 +1,88 @@
 #include <stdio.h>
-#include <limits.h>
-#define MAX 100  
+#include <stdlib.h>
 
-int minKey(int key[], int mstSet[], int V) {
-    int min = INT_MAX, min_index = -1;
-    for (int v = 0; v < V; v++) {
-        if (mstSet[v] == 0 && key[v] < min) {
-            min = key[v];
-            min_index = v;
-        }
-    }
-    return min_index;
+#define MAX 100
+#define INF 999999
+
+typedef struct {
+    int u, v, weight;
+} Edge;
+
+int parent[MAX];
+
+int find(int i) {
+    if (parent[i] == -1)
+        return i;
+    return parent[i] = find(parent[i]);
 }
 
-void primMST(int graph[MAX][MAX], int V) {
-    int parent[V];   
-    int key[V];      
-    int mstSet[V];   
-    for (int i = 0; i < V; i++) {
-        key[i] = INT_MAX;
-        mstSet[i] = 0;
+void union_sets(int u, int v) {
+    int u_set = find(u);
+    int v_set = find(v);
+    if (u_set != v_set) {
+        parent[u_set] = v_set;
+    }
+}
+
+int compare_edges(const void *a, const void *b) {
+    Edge *e1 = (Edge *)a;
+    Edge *e2 = (Edge *)b;
+    return e1->weight - e2->weight;
+}
+
+int main() {
+    int n;
+    int adj[MAX][MAX];
+    Edge edgeList[MAX * MAX];
+    int edgeCount = 0;
+
+    printf("Enter the number of vertices: ");
+    scanf("%d", &n);
+
+    printf("Enter the adjacency matrix (use 0 for no edge):\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            scanf("%d", &adj[i][j]);
+            if (adj[i][j] == 0)
+                adj[i][j] = INF; // Treat 0 as no edge
+        }
     }
 
-    key[0] = 0;      
-    parent[0] = -1;  
-
-    for (int count = 0; count < V - 1; count++) {
-        int u = minKey(key, mstSet, V);
-        mstSet[u] = 1;
-        for (int v = 0; v < V; v++) {
-            if (graph[u][v] && mstSet[v] == 0 && graph[u][v] < key[v]) {
-                parent[v] = u;
-                key[v] = graph[u][v];
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (adj[i][j] != INF) {
+                edgeList[edgeCount].u = i;
+                edgeList[edgeCount].v = j;
+                edgeList[edgeCount].weight = adj[i][j];
+                edgeCount++;
             }
         }
     }
 
-    int total_cost = 0;
-    printf("Edge \tWeight\n");
-    for (int i = 1; i < V; i++) {
-        printf("%d - %d \t%d \n", parent[i], i, graph[i][parent[i]]);
-        total_cost += graph[i][parent[i]];
+    qsort(edgeList, edgeCount, sizeof(Edge), compare_edges);
+
+    for (int i = 0; i < n; i++) {
+        parent[i] = -1;
     }
-    printf("Total cost of Minimum Spanning Tree: %d\n", total_cost);
-}
 
-int main() {
-    int V;
+    int minCost = 0;
+    printf("\nEdges in the Minimum Cost Spanning Tree:\n");
 
-    printf("Enter the number of vertices: ");
-    scanf("%d", &V);
+    int edgesAccepted = 0;
+    for (int i = 0; i < edgeCount && edgesAccepted < n - 1; i++) {
+        int u = edgeList[i].u;
+        int v = edgeList[i].v;
+        int w = edgeList[i].weight;
 
-    int graph[MAX][MAX];
-
-    printf("Enter the adjacency matrix (enter 0 if no edge exists):\n");
-    for (int i = 0; i < V; i++) {
-        for (int j = 0; j < V; j++) {
-            scanf("%d", &graph[i][j]);
+        if (find(u) != find(v)) {
+            union_sets(u, v);
+            printf("(%d - %d) : %d\n", u, v, w);
+            minCost += w;
+            edgesAccepted++;
         }
     }
 
-    primMST(graph, V);
+    printf("\nTotal Minimum Cost: %d\n", minCost);
+
     return 0;
 }
